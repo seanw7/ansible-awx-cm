@@ -1,0 +1,8 @@
+---
+- name: Ping host
+  hosts: all
+  # vars:
+
+  tasks:
+    - name: Example from an Ansible Playbook
+      ansible.builtin.ping:
