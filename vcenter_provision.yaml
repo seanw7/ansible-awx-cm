@@ -1,4 +1,5 @@
-- hosts: localhost
+- name: Provision a VM in vCenter
+  hosts: localhost
   connection: local
   gather_facts: false
   order: sorted
@@ -7,77 +8,77 @@
     HOST_COUNT: "{{ ansible_play_hosts | length }}"
 
   tasks:
-  - name: "Create a virtual machine from a template {{ vm_clone_name }}"
-    vmware_guest:
-      hostname: "{{ vcenter_hostname }}"
-      username: "{{ vcenter_username }}"
-      password: "{{ vcenter_password }}"
-      validate_certs: no
-      folder: "{{ vcenter_folder }}"
-      name: "{{ current_hostname }}"
-      state: poweredon
-      template: "{{ vm_template_name }}"
-      datacenter: "{{ datacenter }}"
-      cluster: "{{ cluster }}"
-      datastore: "{{ datastore }}"
-      #wait_for_ip_address: yes
-      # disk:
-      #   - size_gb: 100  # The first two disks here need to match the first two disks of the template
-      #     type: thin
-      #     datastore: "{{ datastore }}"
-        # - size_gb: 60
-        #   type: thin
-        #   datastore: "{{ datastore }}"
-        # - size_gb: 80
-        #   type: thin
-        #   datastore: "{{ datastore }}"
-        # - size_gb: 70
-        #   type: thin
-        #   datastore: "{{ datastore }}"
-        # - size_gb: 30
-        #   type: thin
-        #   datastore: "{{ datastore }}"
-        # - size_gb: 30
-        #   type: thin
-        #   datastore: "{{ datastore }}"
-        # - size_gb: 30
-        #   type: thin
-        #   datastore: "{{ datastore }}"
-        # - size_gb: 16
-        #   type: thin
-        #   datastore: "{{ datastore }}"
-        # - size_gb: 16
-        #   type: thin
-        #   datastore: "{{ datastore }}"
-        # - size_gb: 16
-        #   type: thin
-        #   datastore: "{{ datastore }}"
-        # - size_gb: 16
-        #   type: thin
-        #   datastore: "{{ datastore }}"
-      networks:
-        # - name: "{{ network1 }}"
-        #   ip: "{{ public_ipaddrs[current_num] }}" # This takes the IP from the Dig NSLookup
-        #   netmask: 255.255.255.0
-        #   gateway: "{{ gateway_1 }}"
-        #   type: static
-        - name: "{{ network1 }}"
-          type: dhcp
-          start_connected: yes
-        # - name: "{{ network2 }}"
-        #   ip: "{{ private_ipaddrs[current_num] }}"
-        #   netmask: 255.255.255.0
-        #   gateway: "{{ gateway_2 }}"
-        #   type: static
-        #   start_connected: yes
-    delegate_to: localhost
-    register: deploy
-    run_once: true
-    # loop: "{{ host.split(',') }}"
-    # loop_control:
-    #   index_var: current_num
-    #   loop_var: current_hostname
+    - name: Create a virtual machine from a template
+      community.vmware.vmware_guest:
+        hostname: "{{ lookup('ansible.builtin.env', 'VMWARE_HOST') }}"
+        username: "{{ lookup('ansible.builtin.env', 'VMWARE_USER') }}"
+        password: "{{ lookup('ansible.builtin.env', 'VMWARE_PASSWORD') }}"
+        validate_certs: false
+        folder: "{{ vcenter_folder }}"
+        name: "{{ current_hostname }}"
+        state: poweredon
+        template: "{{ vm_template_name }}"
+        datacenter: "{{ datacenter }}"
+        cluster: "{{ cluster }}"
+        datastore: "{{ datastore }}"
+        wait_for_ip_address: true
+        # disk:
+        #   - size_gb: 100  # The first two disks here need to match the first two disks of the template
+        #     type: thin
+        #     datastore: "{{ datastore }}"
+          # - size_gb: 60
+          #   type: thin
+          #   datastore: "{{ datastore }}"
+          # - size_gb: 80
+          #   type: thin
+          #   datastore: "{{ datastore }}"
+          # - size_gb: 70
+          #   type: thin
+          #   datastore: "{{ datastore }}"
+          # - size_gb: 30
+          #   type: thin
+          #   datastore: "{{ datastore }}"
+          # - size_gb: 30
+          #   type: thin
+          #   datastore: "{{ datastore }}"
+          # - size_gb: 30
+          #   type: thin
+          #   datastore: "{{ datastore }}"
+          # - size_gb: 16
+          #   type: thin
+          #   datastore: "{{ datastore }}"
+          # - size_gb: 16
+          #   type: thin
+          #   datastore: "{{ datastore }}"
+          # - size_gb: 16
+          #   type: thin
+          #   datastore: "{{ datastore }}"
+          # - size_gb: 16
+          #   type: thin
+          #   datastore: "{{ datastore }}"
+        networks:
+          # - name: "{{ network1 }}"
+          #   ip: "{{ public_ipaddrs[current_num] }}" # This takes the IP from the Dig NSLookup
+          #   netmask: 255.255.255.0
+          #   gateway: "{{ gateway_1 }}"
+          #   type: static
+          - name: "{{ network1 }}"
+            type: dhcp
+            start_connected: true
+          # - name: "{{ network2 }}"
+          #   ip: "{{ private_ipaddrs[current_num] }}"
+          #   netmask: 255.255.255.0
+          #   gateway: "{{ gateway_2 }}"
+          #   type: static
+          #   start_connected: yes
+      delegate_to: localhost
+      register: deploy
+      # run_once: true
+      # loop: "{{ host.split(',') }}"
+      # loop_control:
+      #   index_var: current_num
+      #   loop_var: current_hostname
 
-  - name: debug deployment
-    debug:
-      var: deploy
+    - name: Debug deployment
+      debug:
+        var: deploy
