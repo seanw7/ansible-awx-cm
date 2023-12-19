@@ -13,7 +13,7 @@
     - name: Download ISO
       ansible.builtin.get_url:
         url: "{{ iso_url }}"
-        dest: "/tmp/{{ iso_name }}"
+        dest: "/tmp/{{ iso_name_in_vcenter }}"
         checksum: "{{ iso_checksum }}"
         mode: u=rw,g=r,o=r
 
@@ -35,7 +35,7 @@
         hostname: "{{ lookup('ansible.builtin.env', 'VMWARE_HOST') }}"
         username: "{{ lookup('ansible.builtin.env', 'VMWARE_USER') }}"
         password: "{{ lookup('ansible.builtin.env', 'VMWARE_PASSWORD') }}"
-        src: "/tmp/{{ iso_name }}"
+        src: "/tmp/{{ iso_name_in_vcenter }}"
         datacenter: "{{ datacenter }}"
         datastore: "{{ datastore }}"
         path: "/ISOs/{{ iso_name_in_vcenter }}"
@@ -43,5 +43,5 @@
 
     - name: Remove the temporary ISO file
       ansible.builtin.file:
-        path: "/tmp/{{ iso_name }}"
+        path: "/tmp/{{ iso_name_in_vcenter }}"
         state: absent
