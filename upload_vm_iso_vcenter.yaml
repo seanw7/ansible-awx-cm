@@ -1,0 +1,47 @@
+---
+- name: Download and Upload ISO to VMware Content Library
+  hosts: localhost
+  gather_facts: false
+  vars:
+    content_library_name: my-test-content-lib
+    iso_url: https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.3-x86_64-dvd.iso
+    iso_checksum: sha256:82441c7c9630b313d4183106231b08e192382bb6c7827e62acd467a749f030b9
+    iso_name_in_vcenter: "{{iso_url.split('/')[-1]}}"
+
+
+  tasks:
+    - name: Download ISO
+      ansible.builtin.get_url:
+        url: "{{ iso_url }}"
+        dest: "/tmp/{{ iso_name }}"
+        checksum: "{{ iso_checksum }}"
+        mode: u=rw,g=r,o=r
+
+    - name: Create Local Content Library
+      community.vmware.vmware_content_library_manager:
+        hostname: "{{ lookup('ansible.builtin.env', 'VMWARE_HOST') }}"
+        username: "{{ lookup('ansible.builtin.env', 'VMWARE_USER') }}"
+        password: "{{ lookup('ansible.builtin.env', 'VMWARE_PASSWORD') }}"
+        library_name: "{{ content_library_name }}"
+        library_description: 'Library with Datastore Backing'
+        library_type: local
+        validate_certs: false
+        datastore_name: "{{ datastore }}"
+        state: present
+      delegate_to: localhost
+
+    - name: Copy file to datastore using delegate_to
+      community.vmware.vsphere_copy:
+        hostname: "{{ lookup('ansible.builtin.env', 'VMWARE_HOST') }}"
+        username: "{{ lookup('ansible.builtin.env', 'VMWARE_USER') }}"
+        password: "{{ lookup('ansible.builtin.env', 'VMWARE_PASSWORD') }}"
+        src: "/tmp/{{ iso_name }}"
+        datacenter: "{{ datacenter }}"
+        datastore: "{{ datastore }}"
+        path: "/ISOs/{{ iso_name_in_vcenter }}"
+      delegate_to: localhost
+
+    - name: Remove the temporary ISO file
+      ansible.builtin.file:
+        path: "/tmp/{{ iso_name }}"
+        state: absent
