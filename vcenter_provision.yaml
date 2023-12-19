@@ -62,7 +62,7 @@
           #   netmask: 255.255.255.0
           #   gateway: "{{ gateway_1 }}"
           #   type: static
-          - name: "{{ network1 }}"
+          - name: "{{ network }}"
             type: dhcp
             start_connected: true
           # - name: "{{ network2 }}"
